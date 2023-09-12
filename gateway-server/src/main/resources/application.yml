@@ -6,12 +6,22 @@ spring:
         uri: lb://product.service
         predicates:
           - Path=/api/product/**
+          # - Header=token, \d+
+          # - Method=GET , POST
+          # - Query=color, green
+          # - Cookie=color, azul
+          # All predicates must go in the RequestHeader or Cookie or param
         filters:
           - StripPrefix=2
+          - CookieExample= My personal message, user, JoseAresti
       - id: items.service
         uri: lb://items.service
         predicates:
           - Path=/api/items/**
         filters:
           - StripPrefix=2
+          - AddRequestHeader=token-request, 123456
+          - AddResponseHeader=token-response, 1234
+          - SetResponseHeader=Content-Type, text/plain
+          - AddRequestParameter=name, jose
           

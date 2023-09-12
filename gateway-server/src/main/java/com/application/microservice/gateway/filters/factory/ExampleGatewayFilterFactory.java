@@ -1,5 +1,7 @@
 package com.application.microservice.gateway.filters.factory;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -15,18 +17,42 @@ import reactor.core.publisher.Mono;
 public class ExampleGatewayFilterFactory
 		extends AbstractGatewayFilterFactory<ExampleGatewayFilterFactory.Configuration> {
 	
-	
+	private final Logger logger = LoggerFactory.getLogger(ExampleGatewayFilterFactory.class);
 
 	public ExampleGatewayFilterFactory() {
 		super(Configuration.class);
 	}
+	
+	@Override
+	public GatewayFilter apply(Configuration config) {
+		return (exchange, chain) -> {
+			logger.info("Executing pre gateway filter factory: " + config.message);
+			
+			return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+				Optional.ofNullable(config.cookieValue).ifPresent(cookie -> {
+					exchange.getResponse().addCookie(ResponseCookie.from(config.cookieName, cookie).build());
+				});
+				
+				logger.info("Executing post gateway filter factory: " + config.message);
+			}));
+		};
+	}
 
-	private final Logger logger = LoggerFactory.getLogger(ExampleGatewayFilterFactory.class);
+	@Override
+	public List<String> shortcutFieldOrder() {
+		return Arrays.asList("message", "cookieName", "cookieValue");
+	}
+
+	@Override
+	public String name() {
+		return "CookieExample";
+	}
 
 	public static class Configuration {
 		private String message;
 		private String cookieValue;
 		private String cookieName;
+		
 		public String getMessage() {
 			return message;
 		}
@@ -46,22 +72,6 @@ public class ExampleGatewayFilterFactory
 			this.cookieName = cookieName;
 		}
 		
-		
-	}
-
-	@Override
-	public GatewayFilter apply(Configuration config) {
-		return (exchange, chain) -> {
-			logger.info("Executing pre gateway filter factory: " + config.message);
-			
-			return chain.filter(exchange).then(Mono.fromRunnable(() -> {
-				Optional.ofNullable(config.cookieValue).ifPresent(cookie -> {
-					exchange.getResponse().addCookie(ResponseCookie.from(config.cookieName, config.cookieValue).build());
-				});
-				
-				logger.info("Executing post gateway filter factory: " + config.message);
-			}));
-		};
 	}
 
 }
