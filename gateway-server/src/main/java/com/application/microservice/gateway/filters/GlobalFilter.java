@@ -36,7 +36,7 @@ public class GlobalFilter implements org.springframework.cloud.gateway.filter.Gl
 
 	@Override
 	public int getOrder() {
-		return 1;
+		return 100;
 	}
 
 }

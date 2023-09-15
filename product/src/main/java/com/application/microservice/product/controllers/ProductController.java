@@ -1,6 +1,7 @@
 package com.application.microservice.product.controllers;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,7 +23,15 @@ public class ProductController {
 	}
 	
 	@GetMapping("/show/{id}")
-	public ProductModel details(@PathVariable Long id) {
+	public ProductModel details(@PathVariable Long id) throws InterruptedException {
+		
+		if(id.equals(10L)) {
+			throw new IllegalStateException("The product does not exist");
+		}
+		
+		if(id.equals(7L)) {
+			TimeUnit.SECONDS.sleep(5L);
+		}
 		return productoService.findById(id);
 	}
 }
